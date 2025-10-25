@@ -1,0 +1,56 @@
+services:
+  postgres-db:
+    image: postgres:14.1-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=ecommerce_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d ecommerce_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  airflow-webserver:
+    image: apache/airflow:2.7.1
+    container_name: airflow-webserver
+    command: webserver
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres-db:5432/ecommerce_db
+      - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
+      - AIRFLOW_UID=50000
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.1
+    container_name: airflow-scheduler
+    command: scheduler
+    depends_on:
+      postgres-db:
+        condition: service_healthy
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres-db:5432/ecommerce_db
+      - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
+      - AIRFLOW_UID=50000
+
+volumes:
+  postgres_data:
