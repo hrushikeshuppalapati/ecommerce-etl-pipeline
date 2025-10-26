@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, avg, count
+from pyspark.sql.functions import col, avg, count, sum
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DateType, DoubleType
 
 def main():
@@ -58,7 +58,7 @@ def main():
     customer_summary_df = customer_orders_df.groupBy("customer_id", "name", "email") \
         .agg(
             count("order_id").alias("total_orders"),
-            col("amount").alias("total_spent")
+            sum("amount").alias("total_spent")
         ) \
         .na.fill(0)
 
