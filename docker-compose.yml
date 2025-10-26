@@ -51,6 +51,32 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres-db:5432/ecommerce_db
       - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
       - AIRFLOW_UID=50000
+  
+  spark-master:
+    image: bitnami/spark:3.3.2
+    container_name: spark-master
+    command: >
+      /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.master.Master
+    ports:
+      - "9090:8080" # Spark Master Web UI
+      - "7077:7077" # Spark Master port
+    volumes:
+      - ./jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
 
+  spark-worker:
+    image: bitnami/spark:3.3.2
+    container_name: spark-worker
+    command: >
+      /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
+      spark://spark-master:7077
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+    volumes:
+      - ./jobs:/opt/bitnami/spark/jobs
+      - ./data:/opt/bitnami/spark/data
 volumes:
   postgres_data:
