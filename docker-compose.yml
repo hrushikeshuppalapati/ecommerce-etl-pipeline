@@ -34,6 +34,9 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres-db:5432/ecommerce_db
       - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
       - AIRFLOW_UID=50000
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW_CONN_SPARK_DEFAULT=spark://spark-master:7077
+      - PIP_ADDITIONAL_PACKAGES=apache-airflow-providers-spark
 
   airflow-scheduler:
     image: apache/airflow:2.7.1
@@ -51,9 +54,12 @@ services:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://admin:admin@postgres-db:5432/ecommerce_db
       - AIRFLOW__WEBSERVER__SECRET_KEY=your_secret_key_here
       - AIRFLOW_UID=50000
+      - AIRFLOW__CORE__LOAD_EXAMPLES=false
+      - AIRFLOW_CONN_SPARK_DEFAULT=spark://spark-master:7077
+      - PIP_ADDITIONAL_PACKAGES=apache-airflow-providers-spark
   
   spark-master:
-    image: bitnami/spark:3.3.2
+    image: bitnamilegacy/spark:3.3.2
     container_name: spark-master
     command: >
       /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.master.Master
@@ -65,7 +71,7 @@ services:
       - ./data:/opt/bitnami/spark/data
 
   spark-worker:
-    image: bitnami/spark:3.3.2
+    image: bitnamilegacy/spark:3.3.2
     container_name: spark-worker
     command: >
       /opt/bitnami/spark/bin/spark-class org.apache.spark.deploy.worker.Worker
