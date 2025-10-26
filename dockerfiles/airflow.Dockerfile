@@ -1,11 +1,7 @@
 # Start from the official Airflow image
+# The default user is 'airflow', so we don't need any USER commands
 FROM apache/airflow:2.7.1
 
-# Switch to the root user to get permissions
-USER root
-
-# Install the Spark provider package
-RUN pip install apache-airflow-providers-spark
-
-# Switch back to the default airflow user
-USER airflow
+# Install the Spark package to the 'airflow' user's local directory
+# This is the officially supported way.
+RUN pip install --user apache-airflow-providers-spark
